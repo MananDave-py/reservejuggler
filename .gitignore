@@ -1,0 +1,16 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Local Django database
+db.sqlite3
+
+# IDE settings and generated project/module metadata
+.idea/
+*.iml
+modules.xml
