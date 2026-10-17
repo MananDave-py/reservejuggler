@@ -17,12 +17,8 @@ def _withdrawal_forecast():
     return train_and_evaluate()
 
 
-def get_live_allocation(available_cash=DEFAULT_AVAILABLE_CASH, repo_window_open=None):
-    """Return all data needed by the live allocation API response."""
-    if repo_window_open is None:
-        repo_window_open = datetime.now(timezone.utc).hour == 17
-
-    forecast_result = _withdrawal_forecast()
+def _build_allocation(forecast_result, available_cash, repo_window_open):
+    """Combine one withdrawal forecast with fresh news and allocation points."""
     forecast = forecast_result["next_hour_forecast"]
     articles = fetch_market_news()
     points = news_to_points(articles)
@@ -32,7 +28,10 @@ def get_live_allocation(available_cash=DEFAULT_AVAILABLE_CASH, repo_window_open=
         repo_window_open=repo_window_open,
         points=points,
     )
-
+    allocation_percentages = {
+        tier: (allocation[tier] / available_cash * 100) if available_cash else 0
+        for tier in ("reserve", "repo", "bonds", "equities")
+    }
     return {
         "forecast": forecast,
         "model_metrics": forecast_result["model_metrics"],
@@ -41,4 +40,26 @@ def get_live_allocation(available_cash=DEFAULT_AVAILABLE_CASH, repo_window_open=
         "repo_window_open": repo_window_open,
         "available_cash_usd": available_cash,
         "suggested_allocation": allocation,
+        "allocation_percentages": allocation_percentages,
     }
+
+
+def get_allocation_from_records(records, available_cash=DEFAULT_AVAILABLE_CASH,
+                                repo_window_open=None):
+    """Train from uploaded CSV records and return the resulting allocation."""
+    if repo_window_open is None:
+        repo_window_open = datetime.now(timezone.utc).hour == 17
+
+    return _build_allocation(
+        train_and_evaluate(records), available_cash, repo_window_open
+    )
+
+
+def get_live_allocation(available_cash=DEFAULT_AVAILABLE_CASH, repo_window_open=None):
+    """Return an allocation trained from the project's default CSV file."""
+    if repo_window_open is None:
+        repo_window_open = datetime.now(timezone.utc).hour == 17
+
+    return _build_allocation(
+        _withdrawal_forecast(), available_cash, repo_window_open
+    )

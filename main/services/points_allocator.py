@@ -53,22 +53,15 @@ def suggest_points_allocation(
     reserve = min(available_cash, reserve)
     surplus = available_cash - reserve
 
-    if repo_window_open:
-        weights = _keep_minimum_equity_weight(
-            {
-                "repo": 0.35 + (repo_points / 500) + (risk_points / 500),
-                "bonds": 0.30 + (bond_points / 500) + (risk_points / 1000),
-                "equities": 0.35 + (equity_points / 300) - (risk_points / 250),
-            }
-        )
-    else:
-        weights = _keep_minimum_equity_weight(
-            {
-                "bonds": 0.50 + (bond_points / 400) + (risk_points / 800),
-                "equities": 0.50 + (equity_points / 300) - (risk_points / 200),
-            }
-        )
-        weights["repo"] = 0.0
+    # Always calculate the desired Repo target. When the sweep window is
+    # closed, the caller can queue this amount for the next available window.
+    weights = _keep_minimum_equity_weight(
+        {
+            "repo": 0.35 + (repo_points / 500) + (risk_points / 500),
+            "bonds": 0.30 + (bond_points / 500) + (risk_points / 1000),
+            "equities": 0.35 + (equity_points / 300) - (risk_points / 250),
+        }
+    )
 
     return {
         "reserve": reserve,
@@ -77,6 +70,9 @@ def suggest_points_allocation(
         "equities": surplus * weights["equities"],
         "allocation_weights": weights,
         "reserve_multiplier": reserve_multiplier,
+        "repo_execution_status": (
+            "execute_now" if repo_window_open else "queue_for_next_sweep"
+        ),
         "points_used": {
             "equity_points": equity_points,
             "bond_points": bond_points,

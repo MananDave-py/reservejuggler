@@ -23,7 +23,7 @@
       const rows = String(reader.result).split(/\r?\n/).filter(Boolean).length;
       status.textContent = `${Math.max(rows - 1, 0)} data rows ready to explore.`;
       runLink.classList.remove('disabled');
-      runLink.setAttribute('href', runLink.dataset.dashboardUrl || '/overview/');
+      runLink.disabled = false;
       runLink.setAttribute('aria-disabled', 'false');
     };
     reader.readAsText(file);
