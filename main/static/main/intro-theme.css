@@ -1,0 +1,7 @@
+html[data-theme=dark] .intro-page{--intro-ink:#f8fafc;--intro-muted:#94a3b8;--intro-line:#2b3b52;background:linear-gradient(135deg,#0b1220,#111827 58%,#17132b)}
+html[data-theme=dark] .intro-theme{background:#111827;border-color:#2b3b52}
+html[data-theme=dark] .intro-theme button.selected{background:#29304d;color:#a9a2ff}
+html[data-theme=dark] .float-card,html[data-theme=dark] .steps article,html[data-theme=dark] .mini-tiers span{background:rgba(17,24,39,.9);border-color:#2b3b52}
+html[data-theme=dark] .float-card i{background:#29304d;color:#aaa3ff}
+html[data-theme=dark] .core{background:linear-gradient(135deg,#172235,#242044);border-color:#3d416d}
+.run-link.disabled{background:#dfe3ed;color:#9aa2b5;box-shadow:none;cursor:not-allowed;pointer-events:none}

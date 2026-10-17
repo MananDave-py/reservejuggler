@@ -1,0 +1,45 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reserve Juggler · Explore your reserves</title>
+  <link rel="stylesheet" href="{% static 'main/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'main/dashboard-motion.css' %}">
+  <link rel="stylesheet" href="{% static 'main/intro.css' %}">
+  <link rel="stylesheet" href="{% static 'main/intro-theme.css' %}">
+  <script src="{% static 'main/intro.js' %}" defer></script>
+</head>
+<body class="intro-page">
+  <header class="intro-nav">
+    <a class="brand" href="{% url 'main:intro' %}"><b>R</b><span>Reserve <strong>Juggler</strong></span></a>
+    <nav><a href="#how-it-works">How it works</a><a href="#tiers">Reserve tiers</a><a href="{% url 'main:overview' %}">Open dashboard <span>↗</span></a></nav>
+    <div class="intro-theme"><button data-theme="light">☼</button><button data-theme="dark">◐</button></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <small class="eyebrow">● EDUCATIONAL TREASURY SANDBOX</small>
+        <h1>Make every reserve<br><em>work smarter.</em></h1>
+        <p>Explore how cash, yield and liquidity move together. Reserve Juggler helps you understand the trade-offs behind a resilient treasury strategy.</p>
+        <div class="hero-actions"><a class="hero-button" href="#start">Start exploring <span>→</span></a><a class="text-link" href="#how-it-works">See how it works <span>↓</span></a></div>
+      </div>
+      <div class="hero-visual" aria-label="Animated illustration of reserve tiers flowing into a balanced portfolio">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
+        <div class="core"><span>R</span><small>RESERVE<br>JUGGLER</small></div>
+        <div class="float-card float-cash"><i>◉</i><span>Cash buffer<strong>$200k</strong></span></div>
+        <div class="float-card float-repo"><i>◷</i><span>Overnight repo<strong>$300k</strong></span></div>
+        <div class="float-card float-bonds"><i>▤</i><span>Government bonds<strong>$300k</strong></span></div>
+        <div class="float-card float-equity"><i>↗</i><span>Growth equities<strong>$200k</strong></span></div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="intro-section how"><div class="intro-heading"><small class="eyebrow">A CLEARER WAY TO SEE RISK</small><h2>Balance liquidity with return.</h2><p>Follow the flow of your reserves from instant access to long-term growth, then see how each choice changes the picture.</p></div><div class="steps"><article><b>01</b><span>Map</span><p>See all four reserve tiers in one calm, focused view.</p></article><article><b>02</b><span>Compare</span><p>Understand yield, timing, fees and liquidity friction.</p></article><article><b>03</b><span>Explore</span><p>Replay the simulation and learn from every outcome.</p></article></div></section>
+
+    <section id="tiers" class="tier-strip"><div><small class="eyebrow">ONE PORTFOLIO · FOUR ROLES</small><h2>Every tier has a job.</h2></div><div class="mini-tiers"><span class="mini-cash"><b>01</b>Immediate cash</span><span class="mini-repo"><b>02</b>Overnight yield</span><span class="mini-bonds"><b>03</b>Steady income</span><span class="mini-equity"><b>04</b>Long-term growth</span></div></section>
+
+    <section id="start" class="start-card"><div><small class="eyebrow">READY WHEN YOU ARE</small><h2>Bring your own treasury data.</h2><p>Upload a CSV to explore your reserve mix, then run the dashboard.</p></div><div class="start-controls"><label class="file-picker">↑ <span id="file-name">Upload CSV</span><input id="csv" type="file" accept=".csv,text/csv" hidden></label><a class="run-link disabled" id="run" href="#" data-dashboard-url="{% url 'main:overview' %}" aria-disabled="true">Run dashboard <span>→</span></a><small id="file-status" aria-live="polite"></small></div></section>
+  </main>
+  <footer class="intro-footer"><span>RESERVE JUGGLER</span><span>Educational sample only · Not financial advice</span></footer>
+</body></html>

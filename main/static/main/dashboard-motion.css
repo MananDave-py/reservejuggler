@@ -1,0 +1,38 @@
+/* Live-dashboard motion: short, calm transitions inspired by investing apps. */
+html[data-theme=light]{
+  --surface:#ffffff;
+  --surface2:#f0f3ff;
+  --text:#11152b;
+  --muted:#68708a;
+  --border:#e1e6f2;
+  --accent:#5b4ff6;
+  --accent2:#ecebff;
+  --cash:#18b89a;
+  --repo:#4d8df7;
+  --bonds:#a16cf7;
+  --equity:#f28b56;
+}
+html[data-theme=light] body{background:linear-gradient(135deg,#f5f7ff 0%,#eef8ff 55%,#f9f5ff 100%)}
+html[data-theme=light] .sidebar{background:rgba(255,255,255,.84);box-shadow:8px 0 30px rgba(78,84,150,.05)}
+html[data-theme=light] .brand b{background:linear-gradient(135deg,#635bff,#8b5cf6);box-shadow:0 6px 16px rgba(91,79,246,.25)}
+html[data-theme=light] .run{background:linear-gradient(135deg,#5b4ff6,#7c5cff);box-shadow:0 8px 18px rgba(91,79,246,.23)}
+html[data-theme=light] .sidebar nav a.active,html[data-theme=light] .sidebar nav a:hover{background:linear-gradient(90deg,#ecebff,#f2efff);color:#5146d9}
+html[data-theme=light] .summary article,html[data-theme=light] .tier,html[data-theme=light] .panel,html[data-theme=light] .risk article{box-shadow:0 10px 28px rgba(70,78,140,.06)}
+html[data-theme=light] .summary article:hover,html[data-theme=light] .tier:hover,html[data-theme=light] .panel:hover{box-shadow:0 14px 32px rgba(70,78,140,.11);transform:translateY(-2px);transition:transform .2s ease,box-shadow .2s ease}
+html[data-theme=light] .eyebrow,html[data-theme=light] .tier a,html[data-theme=light] .status{color:#5146d9}
+body{background:var(--surface2)}
+@keyframes rise-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes draw-in{from{opacity:0;transform:scaleX(0);transform-origin:left center}to{opacity:1;transform:scaleX(1);transform-origin:left center}}
+@keyframes bar-grow{from{transform:scaleY(0);transform-origin:bottom center;opacity:.35}to{transform:scaleY(1);transform-origin:bottom center;opacity:1}}
+@keyframes pulse-run{0%,100%{box-shadow:0 0 0 0 rgba(38,125,136,.18)}50%{box-shadow:0 0 0 7px rgba(38,125,136,0)}}
+.summary article,.tier,.panel,.risk article{opacity:0;animation:rise-in .55s cubic-bezier(.2,.8,.2,1) forwards}
+.summary article:nth-child(2),.tier:nth-child(2),.panel:nth-child(2),.risk article:nth-child(2){animation-delay:.08s}
+.summary article:nth-child(3),.tier:nth-child(3),.risk article:nth-child(3){animation-delay:.16s}
+.summary article:nth-child(4),.tier:nth-child(4){animation-delay:.24s}
+.bars i{transform:scaleY(0)}
+.chart.is-visible .bars i{animation:bar-grow .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:.35s}
+.chart.is-visible .bars i:nth-child(2){animation-delay:.46s}.chart.is-visible .bars i:nth-child(3){animation-delay:.57s}.chart.is-visible .bars i:nth-child(4){animation-delay:.68s}.chart.is-visible .bars i:nth-child(5){animation-delay:.79s}
+.line{opacity:0}.chart.is-visible .line{animation:draw-in 1.35s cubic-bezier(.2,.8,.2,1) .45s forwards}.chart.is-visible .line.low{animation-delay:.7s}
+.bar i{transform:scaleX(0);transform-origin:left;animation:draw-in .85s cubic-bezier(.2,.8,.2,1) .55s forwards}
+.run.is-running{animation:pulse-run 1s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

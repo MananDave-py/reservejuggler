@@ -5,6 +5,7 @@ from . import views
 app_name = 'main'
 
 urlpatterns = [
-    # Add app routes here, for example:
-    # path('', views.home, name='home'),
+    path('', views.intro, name='intro'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('overview/', views.dashboard, name='overview'),
 ]

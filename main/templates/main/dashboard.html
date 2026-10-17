@@ -1,0 +1,40 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overview · Reserve Juggler</title>
+  <link rel="stylesheet" href="{% static 'main/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'main/dashboard-motion.css' %}">
+  <script src="{% static 'main/dashboard.js' %}" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="{% url 'main:dashboard' %}"><b>R</b><span>Reserve <strong>Juggler</strong></span></a>
+    <small class="label">WORKSPACE</small>
+    <nav><a class="active" href="{% url 'main:dashboard' %}">▣ <span>Main</span></a><a href="#summarizer">✦ <span>Summarizer</span></a></nav>
+    <div class="learn"><i>✳</i><h3>A place to learn.</h3><p>Explore the balance between liquidity, risk and return.</p></div>
+    <small class="sandbox">● EDUCATIONAL SANDBOX</small>
+  </aside>
+  <main>
+    <header class="topbar"><div class="crumb">Workspace <span>/</span> <strong>Overview</strong></div><div class="tools"><div class="theme"><button class="selected" data-theme="light">☼ Light</button><button data-theme="dark">◐ Dark</button></div><label class="date">▦ <input id="date" value="Oct 1 – 14, 2026" aria-label="Date range"></label><label class="upload">↑ Upload CSV<input id="csv" type="file" accept=".csv,text/csv" hidden></label><button id="run" class="run">▶ Run</button></div></header>
+    <section class="intro"><div><small class="eyebrow">● SAMPLE DATA</small><h1>Your reserves, balanced across liquidity and return.</h1><p>A clear view of your portfolio across four reserve tiers.</p></div><div id="status" class="status" aria-live="polite"></div></section>
+    <section class="summary">
+      <article><small>Cash available</small><b>$200,000</b><span class="green">Instantly available · Tier 0</span></article><article><small>Total allocated</small><b>$1,000,000</b><span>Across four reserve tiers</span></article><article><small>Projected annual return</small><b>$47,300</b><span class="blue">4.73% blended · Not guaranteed</span></article><article><small>Liquidity coverage</small><b>1.67×</b><span>$200k cash / $120k withdrawals</span></article>
+    </section>
+    <section id="tiers"><div class="section-head"><div><h2>Your reserve tiers</h2><p>Portfolio allocation across liquid cash and yield-bearing assets.</p></div><small>4 tiers · USD</small></div>
+      <div class="tiers">
+        <article class="tier cash"><small>TIER 0</small><h3>Cash buffer</h3><p>Operational checking reserves</p><b>$200,000 <em>20%</em></b><strong>0% <i>APY</i></strong><span>✓ Instantly available</span><p>No fee and minimal risk.</p><div class="bar"><i style="width:20%"></i></div><a href="#risk">View details →</a></article>
+        <article class="tier repo"><small>TIER 1</small><h3>Overnight repo</h3><p>Central bank repurchase facility</p><b>$300,000 <em>30%</em></b><strong>≈ 4.3% <i>APY</i></strong><span>◷ Matures at 08:00 after 17:00 cutoff</span><p>Early break costs 0.5%.</p><div class="bar"><i style="width:30%"></i></div><a href="#risk">View details →</a></article>
+        <article class="tier bonds"><small>TIER 2</small><h3>2-year government bonds</h3><p>Government fixed income</p><b>$300,000 <em>30%</em></b><strong>≈ 4.8% <i>yield</i></strong><span>! Sale required</span><p>Prices move with yields. Sale incurs a 2% haircut.</p><div class="bar"><i style="width:30%"></i></div><a href="#risk">View details →</a></article>
+        <article class="tier equity"><small>TIER 3</small><h3>Growth equities</h3><p>Equity market exposure</p><b>$200,000 <em>20%</em></b><strong>≈ 10% <i>expected APY</i></strong><span>! Sale required</span><p>≈18% annualized volatility. Emergency sale: 15% slippage.</p><div class="bar"><i style="width:20%"></i></div><a href="#risk">View details →</a></article>
+      </div>
+    </section>
+    <section id="data" class="charts"><article class="panel"><div class="section-head"><div><h2>Allocation over time</h2><p>How the reserve mix is distributed.</p></div><small>SAMPLE DATA</small></div><div class="legend"><span>● Cash 20%</span><span>● Repo 30%</span><span>● Bonds 30%</span><span>● Equities 20%</span></div><div class="chart allocation-chart"><div class="bars"><i></i><i></i><i></i><i></i><i></i></div><div class="axis"><span>100%</span><span>50%</span><span>0%</span></div><footer>Oct 1　 Oct 4　 Oct 7　 Oct 10　 Oct 14</footer></div></article><article class="panel"><div class="section-head"><div><h2>Liquidity outlook</h2><p>Cash available against forecast withdrawals.</p></div><small>SAMPLE DATA</small></div><div class="legend"><span class="liquid">● Cash $200k</span><span class="withdraw">● Forecast withdrawals $120k</span></div><div class="chart line-chart"><div class="line"></div><div class="line low"></div><div class="axis"><span>$240k</span><span>$120k</span><span>$0k</span></div><footer>Oct 1　　　　　　　　 Oct 7　　　　　　　　 Oct 14</footer></div></article></section>
+    <div id="summarizer" aria-hidden="true"></div>
+    <section id="risk"><div class="section-head"><div><h2>Risk and liquidity</h2><p>Key indicators for this illustrative cash forecast.</p></div></div><div class="risk"><article><b>✓</b><div><small>Withdrawal coverage</small><strong>Covered in sample</strong><span>$120,000 forecast · $80,000 cash headroom</span></div></article><article><b>!</b><div><small>Early liquidation costs</small><strong>Instrument-specific</strong><span>Repo 0.5% · Bonds 2% · Equities 15%</span></div></article><article><b>⌁</b><div><small>Overdraft exposure</small><strong>None projected</strong><span>Based on this illustrative cash forecast</span></div></article></div></section>
+    <footer class="disclaimer">Educational sample only. Illustrative data, not financial advice. Yields and expected returns are not guaranteed; actual liquidity, fees and market outcomes may differ.</footer>
+  </main>
+</div>
+</body></html>
