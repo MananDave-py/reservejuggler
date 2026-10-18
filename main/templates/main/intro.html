@@ -14,7 +14,7 @@
   <header class="intro-nav">
     <a class="brand" href="{% url 'main:intro' %}"><img src="{% static 'main/moneymaxxer-mark.svg' %}" alt=""><span><strong>MoneyMaxxer</strong></span></a>
     <nav><a href="#how-it-works">How it works</a><a href="#tiers">Reserve tiers</a>{% if user.is_authenticated %}<a href="{% url 'main:overview' %}">Open dashboard <span>↗</span></a>{% endif %}</nav>
-    {% if user.is_authenticated %}<a class="account-link" href="{% url 'main:dashboard' %}">Dashboard</a><form class="account-form" method="post" action="{% url 'main:logout' %}">{% csrf_token %}<button class="account-link" type="submit">Log out</button></form>{% else %}<a class="account-link" href="{% url 'main:login' %}?next={% url 'main:dashboard' %}">Log in</a>{% endif %}
+    {% if user.is_authenticated %}<a class="account-link" href="{% url 'main:dashboard' %}">Dashboard</a><form class="account-form" method="post" action="{% url 'main:logout' %}">{% csrf_token %}<button class="account-link" type="submit">Log out</button></form>{% endif %}
     <div class="intro-theme"><button data-theme="light">☼</button><button data-theme="dark">◐</button></div>
   </header>
 
