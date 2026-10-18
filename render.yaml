@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: moneymaxxer
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: SEED_DEMO_USERS
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: moneymaxxer-db
+          property: connectionString
+
+databases:
+  - name: moneymaxxer-db
+    plan: free
+    databaseName: moneymaxxer
+    user: moneymaxxer

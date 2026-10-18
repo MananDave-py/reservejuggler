@@ -2,7 +2,7 @@
 
 MoneyMaxxer is an educational treasury dashboard. It forecasts hourly withdrawals from a CSV, suggests how to divide available cash across four reserve tiers, keeps per-user allocation history, and can ask Gemini to explain the trade-offs.
 
-> **For evaluation and learning only.** The included data is synthetic; allocations are illustrative and are not financial advice. The demo server is intended for local use, not public deployment.
+> **For evaluation and learning only.** The included data is synthetic; allocations are illustrative and are not financial advice.
 
 ## Try the demo
 
@@ -29,6 +29,14 @@ docker compose up --build
 ```
 
 Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). The Compose setup builds the container, applies database migrations, prepares static files, and creates the demo accounts. Uploaded allocation history persists in the `moneymaxxer-data` volume. Stop the app with `Ctrl+C`; use `docker compose down` to stop and remove the container while preserving that volume.
+
+## Publish a judge-facing web link
+
+The [`render.yaml`](render.yaml) Blueprint configures a Render Docker web service and PostgreSQL database. Connect this private GitHub repository to Render, choose **New Blueprint**, and review its resources before applying them. Render generates the Django secret and connects the database. The demo accounts are seeded so judges can sign in and upload the sample CSV.
+
+The Blueprint uses Render's free plans to avoid creating paid resources without your approval. Free web services can spin down when idle, and free PostgreSQL has a limited lifetime. Check Render's current limits before relying on it for a longer-term public demo; a paid always-on service and database are more dependable. The repository owner must grant Render access because this GitHub repository is private.
+
+The demo accounts share one database, so their upload histories are shared. Judges can register separate accounts for isolated histories. Never add API keys to the repo or commit `.env`; set provider keys as hosting secrets or enter them in the app.
 
 ## Run from source
 
@@ -75,5 +83,5 @@ The distributable ZIP is written to `dist/MoneyMaxxer-Windows.zip`. It includes 
 
 - Django authentication keeps uploads and allocation history scoped to the signed-in user.
 - Registration creates an account but asks the user to sign in afterward.
-- User data is stored in SQLite. Docker persists it in a named volume; the portable app uses the current Windows user's Local AppData.
-- The demo uses Django's local development server. Use a production-grade deployment configuration before exposing an instance to a network.
+- Local user data is stored in SQLite. Docker persists it in a named volume; the portable app uses the current Windows user's Local AppData. The Render deployment uses PostgreSQL.
+- Local development and the Windows bundle use Django's development server. Docker deployments use Gunicorn with production security settings.

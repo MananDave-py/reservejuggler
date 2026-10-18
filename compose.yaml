@@ -12,6 +12,7 @@ services:
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
       DJANGO_DB_PATH: /data/db.sqlite3
       DJANGO_STATIC_ROOT: /data/staticfiles
+      SEED_DEMO_USERS: "1"
     volumes:
       - moneymaxxer-data:/data
     restart: unless-stopped

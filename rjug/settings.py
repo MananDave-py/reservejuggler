@@ -21,10 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "moneymaxxer-local-demo-key-change-for-public-deployment",
-)
+_LOCAL_SECRET_KEY = "moneymaxxer-local-demo-key-change-for-public-deployment"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", _LOCAL_SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "1").lower() in {"1", "true", "yes"}
@@ -36,6 +34,14 @@ ALLOWED_HOSTS = [
     ).split(",")
     if host.strip()
 ]
+render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if render_hostname:
+    ALLOWED_HOSTS.append(render_hostname)
+
+if not DEBUG and SECRET_KEY == _LOCAL_SECRET_KEY:
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY for a production deployment.")
 
 
 # Application definition
@@ -84,12 +90,24 @@ WSGI_APPLICATION = 'rjug.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': Path(os.environ.get("DJANGO_DB_PATH", BASE_DIR / 'db.sqlite3')),
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': Path(os.environ.get("DJANGO_DB_PATH", BASE_DIR / 'db.sqlite3')),
+        }
+    }
 
 
 # Password validation
@@ -132,6 +150,22 @@ STATIC_ROOT = Path(os.environ.get("DJANGO_STATIC_ROOT", BASE_DIR / 'staticfiles'
 LOGIN_URL = 'main:login'
 LOGIN_REDIRECT_URL = 'main:dashboard'
 LOGOUT_REDIRECT_URL = 'main:login'
+
+# Render terminates HTTPS at its proxy. These settings keep Django's HTTPS,
+# CSRF, and session-cookie checks correct behind that proxy.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if render_hostname:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{render_hostname}")
 
 
 # Email
