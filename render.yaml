@@ -13,8 +13,6 @@ services:
         generateValue: true
       - key: SEED_DEMO_USERS
         value: "1"
-      - key: SEED_DEMO_SAMPLE
-        value: "1"
       - key: DATABASE_URL
         fromDatabase:
           name: moneymaxxer-db
