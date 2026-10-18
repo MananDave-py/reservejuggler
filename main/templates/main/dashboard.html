@@ -18,10 +18,29 @@
     <small class="sandbox">● EDUCATIONAL SANDBOX</small>
   </aside>
   <main>
-    <header class="topbar"><div class="crumb">Workspace <span>/</span> <strong>Overview</strong></div><form id="csv-upload-form" method="post" enctype="multipart/form-data">{% csrf_token %}</form><div class="tools"><div class="theme"><button class="selected" type="button" data-theme="light">☼ Light</button><button type="button" data-theme="dark">◐ Dark</button></div><label class="date">▦ <input id="date" value="Oct 1 – 14, 2026" aria-label="Date range"></label><label class="upload">↑ Upload CSV<input id="csv" name="csv_file" form="csv-upload-form" type="file" accept=".csv,text/csv" hidden></label><button id="run" form="csv-upload-form" type="submit" class="run">▶ Run</button><div class="account-controls"><span>{{ request.user.username }}</span><form method="post" action="{% url 'main:logout' %}">{% csrf_token %}<button type="submit">Log out</button></form></div></div></header>
+    <header class="topbar"><div class="crumb">Workspace <span>/</span> <strong>Overview</strong></div><form id="csv-upload-form" method="post" enctype="multipart/form-data">{% csrf_token %}</form><div class="tools"><div class="theme"><button class="selected" type="button" data-theme="light">☼ Light</button><button type="button" data-theme="dark">◐ Dark</button></div><label class="date">▦ <input id="date" value="Oct 1 – 14, 2026" aria-label="Date range"></label><label class="upload">↑ Upload CSVs<input id="csv" name="csv_file" form="csv-upload-form" type="file" accept=".csv,text/csv" multiple hidden></label><button id="run" form="csv-upload-form" type="submit" class="run">▶ Run</button><div class="account-controls"><span>{{ request.user.username }}</span><form method="post" action="{% url 'main:logout' %}">{% csrf_token %}<button type="submit">Log out</button></form></div></div></header>
     {% if messages %}<div class="api-flashes">{% for message in messages %}<p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>{% endfor %}</div>{% endif %}
     {% if api_setup_required %}<section class="api-setup" aria-labelledby="api-setup-title"><div><small class="eyebrow">CONNECTION CHECK</small><h2 id="api-setup-title">Check your API connections</h2><p>CSV allocation still works without keys. Add your own keys to enable live Marketaux news and Gemini portfolio explanations.</p><ul><li class="{% if api_status.marketaux.ok %}api-ok{% else %}api-warning{% endif %}"><b>Marketaux:</b> {{ api_status.marketaux.message }}</li><li class="{% if api_status.gemini.ok %}api-ok{% else %}api-warning{% endif %}"><b>Gemini:</b> {{ api_status.gemini.message }}</li></ul></div><form method="post" class="api-key-form">{% csrf_token %}<input type="hidden" name="action" value="save_api_keys"><label>Marketaux API key<input type="password" name="marketaux_api_token" autocomplete="new-password" placeholder="Enter your Marketaux key"></label><label>Gemini API key<input type="password" name="gemini_api_key" autocomplete="new-password" placeholder="Enter your Gemini key"></label><button type="submit">Check and save keys</button><small>Keys are kept in your local app session; inputs stay blank after saving.</small></form></section>{% endif %}
     <section class="intro"><div><small class="eyebrow">{% if allocation_data %}{% if is_historical %}● SAVED ALLOCATION · {{ uploaded_csv_name }}{% else %}● UPLOADED CSV · {{ uploaded_csv_name }}{% endif %}{% else %}● NO CSV UPLOADED{% endif %}</small><h1>Your reserves, balanced across liquidity and return.</h1><p>{% if allocation_data %}{% if is_historical %}Recommendation refreshed with current allocation rules using the forecast and market points saved{% if saved_at %} {{ saved_at|date:"M j, Y, P" }}{% endif %}.{% else %}Allocation calculated from your uploaded CSV and current market news.{% endif %}{% else %}Upload a CSV to calculate and view your reserve allocation.{% endif %}</p>{% if error_message %}<p class="status">{{ error_message }}</p>{% endif %}</div><div id="status" class="status" aria-live="polite"></div></section>
+    {% if uploaded_file_count == 1 and not comparison_results %}<aside class="comparison-prompt"><strong>Want to compare allocations?</strong> Select two CSV files together with <b>Upload CSVs</b>, then click <b>Run</b> to see their results side by side.</aside>{% endif %}
+    {% if comparison_results %}
+    <section class="comparison-section" aria-labelledby="comparison-title">
+      <div class="section-head"><div><h2 id="comparison-title">Side-by-side allocation comparison</h2><p>Compare both uploaded files across available cash, forecast withdrawals, and all four tiers.</p></div><small>2 CSV FILES</small></div>
+      <div class="comparison-grid">
+        {% for result in comparison_results %}
+        <article class="comparison-card">
+          <header><small>CSV {{ forloop.counter }}</small><h3 title="{{ result.filename }}">{{ result.filename }}</h3></header>
+          <dl class="comparison-stat"><div><dt>Cash available</dt><dd>${{ result.available_cash_usd|floatformat:2 }}</dd></div><div><dt>Predicted withdrawals</dt><dd>${{ result.withdrawals_usd|floatformat:2 }}</dd></div></dl>
+          <h4>Tier allocation</h4>
+          <div class="comparison-tiers">
+            {% for tier in result.tiers %}<div class="comparison-tier"><span>{{ tier.name }}</span><strong>${{ tier.amount|floatformat:2 }} <small>{{ tier.percentage|floatformat:1 }}%</small></strong><i><b style="width:{{ tier.percentage|floatformat:1 }}%"></b></i></div>{% endfor %}
+          </div>
+          <p class="comparison-repo">{% if result.repo_window_open %}Repo window open · execute now{% else %}Repo funds queued for next sweep{% endif %}</p>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% else %}
     <section class="summary">
       {% if allocation_data %}
         <article><small>Cash available</small><b>${{ allocation_data.available_cash_usd|floatformat:2 }}</b><span class="green">Used for this allocation</span></article>
@@ -43,7 +62,9 @@
       {% else %}
         <div class="dashboard-empty"><b>No allocation to display</b><span>Your four tier allocations will appear here after you upload and run a CSV.</span></div>
       {% endif %}
-    </section>    <section id="data" class="tier-history">
+    </section>
+    {% endif %}
+    <section id="data" class="tier-history">
       <div class="section-head"><div><h2>Allocation over time</h2><p>Each square tracks one tier across distinct CSV allocations.</p></div><small>{{ history_tier_charts.0.run_count }} DISTINCT SET{{ history_tier_charts.0.run_count|pluralize|upper }}</small></div>
       <div class="tier-chart-grid">
           {% for tier_chart in history_tier_charts %}

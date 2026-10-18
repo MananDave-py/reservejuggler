@@ -79,6 +79,8 @@ def dashboard(request):
         "ai_review": None,
         "allocation_history": history_items,
         "history_tier_charts": _history_tier_charts(history_items),
+        "comparison_results": [],
+        "uploaded_file_count": 0,
         "csv_uploads": uploads,
         "api_status": request.session.get("api_status", {
             "marketaux": {"ok": False, "message": "Marketaux key has not been checked."},
@@ -139,45 +141,73 @@ def dashboard(request):
                 except (RuntimeError, ValueError) as error:
                     context["review_error"] = str(error)
         else:
-            uploaded_csv = request.FILES.get("csv_file")
-            if not uploaded_csv:
+            uploaded_csvs = request.FILES.getlist("csv_file")
+            if not uploaded_csvs:
                 context["error_message"] = "Choose a CSV file before running the dashboard."
-            elif not uploaded_csv.name.lower().endswith(".csv"):
-                context["error_message"] = "Upload a file with the .csv extension."
+            elif len(uploaded_csvs) > 2:
+                context["error_message"] = "Choose no more than two CSV files at a time."
             else:
-                temporary_path = None
-                try:
-                    with NamedTemporaryFile(suffix=".csv", delete=False) as temporary_file:
-                        for chunk in uploaded_csv.chunks():
-                            temporary_file.write(chunk)
-                        temporary_path = temporary_file.name
+                comparison_results = []
+                upload_errors = []
+                gemini_status = check_gemini_api_key(
+                    request.session.get("gemini_api_key")
+                )
 
-                    records = load_hourly_data(temporary_path)
-                    allocation_data = get_allocation_from_records(
-                        records,
-                        api_token=request.session.get("marketaux_api_token"),
+                for uploaded_csv in uploaded_csvs:
+                    if not uploaded_csv.name.lower().endswith(".csv"):
+                        upload_errors.append(f"{uploaded_csv.name}: choose a .csv file.")
+                        continue
+
+                    temporary_path = None
+                    try:
+                        with NamedTemporaryFile(suffix=".csv", delete=False) as temporary_file:
+                            for chunk in uploaded_csv.chunks():
+                                temporary_file.write(chunk)
+                            temporary_path = temporary_file.name
+
+                        records = load_hourly_data(temporary_path)
+                        allocation_data = get_allocation_from_records(
+                            records,
+                            api_token=request.session.get("marketaux_api_token"),
+                        )
+                        api_status = {
+                            "marketaux": allocation_data["market_news_status"],
+                            "gemini": gemini_status,
+                        }
+                        request.session["api_status"] = api_status
+                        context["api_status"] = api_status
+                        context["api_setup_required"] = not all(
+                            status.get("ok") for status in api_status.values()
+                        )
+                        _store_upload_result(
+                            request.user, uploaded_csv.name, records, allocation_data
+                        )
+                        comparison_results.append(
+                            _comparison_result(uploaded_csv.name, allocation_data)
+                        )
+                        context["allocation_data"] = allocation_data
+                        context["uploaded_csv_name"] = uploaded_csv.name
+                        context["is_historical"] = False
+                        context["saved_at"] = None
+                    except (OSError, RuntimeError, ValueError) as error:
+                        upload_errors.append(f"{uploaded_csv.name}: {error}")
+                    finally:
+                        if temporary_path:
+                            os.unlink(temporary_path)
+
+                if len(comparison_results) == 2:
+                    context["comparison_results"] = comparison_results
+                context["uploaded_file_count"] = len(comparison_results)
+                if upload_errors:
+                    context["error_message"] = "Some CSVs could not be processed: " + " ".join(upload_errors)
+                elif comparison_results:
+                    count = len(comparison_results)
+                    context["error_message"] = (
+                        f"Calculated {count} CSV file{'s' if count != 1 else ''}. "
+                        "Their results are shown side by side below."
+                        if count == 2
+                        else "CSV allocation calculated and saved."
                     )
-                    api_status = {
-                        "marketaux": allocation_data["market_news_status"],
-                        "gemini": check_gemini_api_key(
-                            request.session.get("gemini_api_key")
-                        ),
-                    }
-                    request.session["api_status"] = api_status
-                    context["api_status"] = api_status
-                    context["api_setup_required"] = not all(
-                        status.get("ok") for status in api_status.values()
-                    )
-                    _store_upload_result(request.user, uploaded_csv.name, records, allocation_data)
-                    context["allocation_data"] = allocation_data
-                    context["uploaded_csv_name"] = uploaded_csv.name
-                    context["is_historical"] = False
-                    context["saved_at"] = None
-                except (OSError, RuntimeError, ValueError) as error:
-                    context["error_message"] = f"Could not process the CSV: {error}"
-                finally:
-                    if temporary_path:
-                        os.unlink(temporary_path)
 
     return render(request, "main/dashboard.html", context)
 
@@ -236,6 +266,33 @@ def _store_upload_result(user, filename, records, allocation_data):
             risk_points=points["risk_points"],
             repo_execution_status=allocation["repo_execution_status"],
         )
+
+
+def _comparison_result(filename, allocation_data):
+    """Format the calculated figures for the two-file comparison panel."""
+    allocation = allocation_data["suggested_allocation"]
+    available_cash = float(allocation_data["available_cash_usd"])
+    tiers = [
+        ("Cash buffer", "reserve"),
+        ("Overnight repo", "repo"),
+        ("Government bonds", "bonds"),
+        ("Growth equities", "equities"),
+    ]
+    return {
+        "filename": filename,
+        "available_cash_usd": available_cash,
+        "withdrawals_usd": float(allocation_data["forecast"]["withdrawals_usd"]),
+        "forecast_timestamp": allocation_data["forecast"]["timestamp"],
+        "repo_window_open": allocation_data["repo_window_open"],
+        "tiers": [
+            {
+                "name": name,
+                "amount": float(allocation[key]),
+                "percentage": float(allocation[key]) / available_cash * 100 if available_cash else 0,
+            }
+            for name, key in tiers
+        ],
+    }
 
 
 def _allocation_data_from_run(run):

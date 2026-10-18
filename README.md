@@ -16,9 +16,9 @@ After opening the app, sign in, choose **Upload CSV**, select the sample file, a
 
 ## Fastest start: Windows portable app
 
-Download and unzip **MoneyMaxxer-Windows.zip** from the repository's [GitHub Releases](https://github.com/MananDave-py/reservejuggler/releases). Run `MoneyMaxxer.exe`; it opens the local landing page in your browser. Keep the extracted `MoneyMaxxer` folder together, because it contains the bundled runtime and app files. The app stores its local database under `%LOCALAPPDATA%\MoneyMaxxer`.
+Download **MoneyMaxxer-Standalone.exe** from the repository's [GitHub Releases](https://github.com/MananDave-py/reservejuggler/releases) and run it directly, or download and unzip **MoneyMaxxer-Windows.zip** and run `MoneyMaxxer.exe`. The standalone executable bundles the app into one file; the ZIP starts faster and keeps the bundled runtime and app files together. Both versions open the local landing page in your browser and store the local database under `%LOCALAPPDATA%\MoneyMaxxer`.
 
-The portable bundle includes Python and the required packages, so it does not require a separate Python installation or dependency download. Windows may show a SmartScreen prompt for an unsigned demo executable. The app listens only on your own computer at `http://127.0.0.1:8000/`; if that port is already occupied, it picks an available local port and opens it for you.
+Both Windows downloads include Python and the required packages, so they do not require a separate Python installation or dependency download. Windows may show a SmartScreen prompt for an unsigned demo executable. The app listens only on your own computer at `http://127.0.0.1:8000/`; if that port is already occupied, it picks an available local port and opens it for you.
 
 ## Run with Docker
 
@@ -77,7 +77,7 @@ python -m pip install -r requirements.txt pyinstaller
 ./build_windows.ps1
 ```
 
-The distributable ZIP is written to `dist/MoneyMaxxer-Windows.zip`. It includes the runnable app, demo CSV, and this guide.
+The distributable ZIP and standalone executable are written to `dist/MoneyMaxxer-Windows.zip` and `dist/MoneyMaxxer-Standalone.exe`. They include the runnable app and demo CSV.
 
 ## Project notes
 

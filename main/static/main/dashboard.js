@@ -71,17 +71,36 @@
     }, 1100);
   });
 
-  document.getElementById('csv').addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const lines = String(reader.result).split(/\r?\n/).filter(Boolean);
-      status.textContent = `${file.name} loaded · ${Math.max(lines.length - 1, 0)} data rows.`;
-      replayMotion();
-    };
-    reader.onerror = () => { status.textContent = 'Could not read that CSV file.'; };
-    reader.readAsText(file);
+  const csvInput = document.getElementById('csv');
+  csvInput.addEventListener('change', (event) => {
+    const files = [...event.target.files];
+    if (!files.length) return;
+    if (files.length > 2) {
+      status.textContent = 'Select up to two CSV files. Choose two together to compare them side by side.';
+      return;
+    }
+    const names = files.map((file) => file.name).join(' and ');
+    const fileLabel = files.length === 1
+      ? `${names} selected. To compare allocations, select a second CSV too.`
+      : `${names} selected. Click Run to compare both allocations side by side.`;
+    status.textContent = fileLabel;
+    if (files.length === 1) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const lines = String(reader.result).split(/\r?\n/).filter(Boolean);
+        status.textContent = `${names} loaded · ${Math.max(lines.length - 1, 0)} data rows. Select a second CSV to compare.`;
+        replayMotion();
+      };
+      reader.onerror = () => { status.textContent = 'Could not read that CSV file.'; };
+      reader.readAsText(files[0]);
+    }
+  });
+
+  document.getElementById('csv-upload-form').addEventListener('submit', (event) => {
+    if (csvInput.files.length > 2) {
+      event.preventDefault();
+      status.textContent = 'Select no more than two CSV files.';
+    }
   });
 
   animateNumbers();

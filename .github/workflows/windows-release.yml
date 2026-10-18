@@ -28,4 +28,6 @@ jobs:
         with:
           name: MoneyMaxxer ${{ github.ref_name }}
           generate_release_notes: true
-          files: dist/MoneyMaxxer-Windows.zip
+          files: |
+            dist/MoneyMaxxer-Windows.zip
+            dist/MoneyMaxxer-Standalone.exe
