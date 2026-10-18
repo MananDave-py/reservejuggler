@@ -68,7 +68,7 @@ def fetch_market_news(api_token=None, limit=3):
     try:
         request = Request(
             f"{MARKETAUX_URL}?{query}",
-            headers={"User-Agent": "ReserveJuggler/1.0"},
+            headers={"User-Agent": "MoneyMaxxer/1.0"},
         )
         with urlopen(request, timeout=15) as response:
             payload = json.load(response)

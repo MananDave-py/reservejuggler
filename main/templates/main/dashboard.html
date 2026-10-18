@@ -3,7 +3,7 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Overview · Reserve Juggler</title>
+  <title>Overview · MoneyMaxxer</title>
   <link rel="stylesheet" href="{% static 'main/dashboard.css' %}">
   <link rel="stylesheet" href="{% static 'main/dashboard-motion.css' %}">
   <script src="{% static 'main/dashboard.js' %}" defer></script>
@@ -11,29 +11,102 @@
 <body>
 <div class="shell">
   <aside class="sidebar">
-    <a class="brand" href="{% url 'main:dashboard' %}"><b>R</b><span>Reserve <strong>Juggler</strong></span></a>
+    <a class="brand" href="{% url 'main:dashboard' %}"><img src="{% static 'main/moneymaxxer-mark.svg' %}" alt=""><span><strong>MoneyMaxxer</strong></span></a>
     <small class="label">WORKSPACE</small>
     <nav><a class="active" href="{% url 'main:dashboard' %}">▣ <span>Main</span></a><a href="#summarizer">✦ <span>Summarizer</span></a></nav>
     <div class="learn"><i>✳</i><h3>A place to learn.</h3><p>Explore the balance between liquidity, risk and return.</p></div>
     <small class="sandbox">● EDUCATIONAL SANDBOX</small>
   </aside>
   <main>
-    <header class="topbar"><div class="crumb">Workspace <span>/</span> <strong>Overview</strong></div><form id="csv-upload-form" method="post" enctype="multipart/form-data">{% csrf_token %}</form><div class="tools"><div class="theme"><button class="selected" type="button" data-theme="light">☼ Light</button><button type="button" data-theme="dark">◐ Dark</button></div><label class="date">▦ <input id="date" value="Oct 1 – 14, 2026" aria-label="Date range"></label><label class="upload">↑ Upload CSV<input id="csv" name="csv_file" form="csv-upload-form" type="file" accept=".csv,text/csv" hidden></label><button id="run" form="csv-upload-form" type="submit" class="run">▶ Run</button></div></header>
-    <section class="intro"><div><small class="eyebrow">{% if allocation_data %}● UPLOADED CSV · {{ uploaded_csv_name }}{% else %}● SAMPLE DATA{% endif %}</small><h1>Your reserves, balanced across liquidity and return.</h1><p>{% if allocation_data %}Allocation calculated from your uploaded CSV and current market news.{% else %}A clear view of your portfolio across four reserve tiers.{% endif %}</p>{% if error_message %}<p class="status">{{ error_message }}</p>{% endif %}</div><div id="status" class="status" aria-live="polite"></div></section>
+    <header class="topbar"><div class="crumb">Workspace <span>/</span> <strong>Overview</strong></div><form id="csv-upload-form" method="post" enctype="multipart/form-data">{% csrf_token %}</form><div class="tools"><div class="theme"><button class="selected" type="button" data-theme="light">☼ Light</button><button type="button" data-theme="dark">◐ Dark</button></div><label class="date">▦ <input id="date" value="Oct 1 – 14, 2026" aria-label="Date range"></label><label class="upload">↑ Upload CSV<input id="csv" name="csv_file" form="csv-upload-form" type="file" accept=".csv,text/csv" hidden></label><button id="run" form="csv-upload-form" type="submit" class="run">▶ Run</button><div class="account-controls"><span>{{ request.user.username }}</span><form method="post" action="{% url 'main:logout' %}">{% csrf_token %}<button type="submit">Log out</button></form></div></div></header>
+    {% if messages %}<div class="api-flashes">{% for message in messages %}<p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>{% endfor %}</div>{% endif %}
+    {% if api_setup_required %}<section class="api-setup" aria-labelledby="api-setup-title"><div><small class="eyebrow">CONNECTION CHECK</small><h2 id="api-setup-title">Check your API connections</h2><p>CSV allocation still works without keys. Add your own keys to enable live Marketaux news and Gemini portfolio explanations.</p><ul><li class="{% if api_status.marketaux.ok %}api-ok{% else %}api-warning{% endif %}"><b>Marketaux:</b> {{ api_status.marketaux.message }}</li><li class="{% if api_status.gemini.ok %}api-ok{% else %}api-warning{% endif %}"><b>Gemini:</b> {{ api_status.gemini.message }}</li></ul></div><form method="post" class="api-key-form">{% csrf_token %}<input type="hidden" name="action" value="save_api_keys"><label>Marketaux API key<input type="password" name="marketaux_api_token" autocomplete="new-password" placeholder="Enter your Marketaux key"></label><label>Gemini API key<input type="password" name="gemini_api_key" autocomplete="new-password" placeholder="Enter your Gemini key"></label><button type="submit">Check and save keys</button><small>Keys are kept in your local app session; inputs stay blank after saving.</small></form></section>{% endif %}
+    <section class="intro"><div><small class="eyebrow">{% if allocation_data %}{% if is_historical %}● SAVED ALLOCATION · {{ uploaded_csv_name }}{% else %}● UPLOADED CSV · {{ uploaded_csv_name }}{% endif %}{% else %}● NO CSV UPLOADED{% endif %}</small><h1>Your reserves, balanced across liquidity and return.</h1><p>{% if allocation_data %}{% if is_historical %}Recommendation refreshed with current allocation rules using the forecast and market points saved{% if saved_at %} {{ saved_at|date:"M j, Y, P" }}{% endif %}.{% else %}Allocation calculated from your uploaded CSV and current market news.{% endif %}{% else %}Upload a CSV to calculate and view your reserve allocation.{% endif %}</p>{% if error_message %}<p class="status">{{ error_message }}</p>{% endif %}</div><div id="status" class="status" aria-live="polite"></div></section>
     <section class="summary">
-      {% if allocation_data %}<article><small>Cash available</small><b>${{ allocation_data.available_cash_usd|floatformat:2 }}</b><span class="green">Used for this allocation</span></article><article><small>Total allocated</small><b>${{ allocation_data.available_cash_usd|floatformat:2 }}</b><span>Across four reserve tiers</span></article><article><small>Predicted withdrawals</small><b>${{ allocation_data.forecast.withdrawals_usd|floatformat:2 }}</b><span class="blue">Next forecast hour</span></article><article><small>Market risk points</small><b>{{ allocation_data.market_points.risk_points }}</b><span>From current Marketaux sentiment</span></article>{% else %}<article><small>Cash available</small><b>$200,000</b><span class="green">Instantly available · Tier 0</span></article><article><small>Total allocated</small><b>$1,000,000</b><span>Across four reserve tiers</span></article><article><small>Projected annual return</small><b>$47,300</b><span class="blue">4.73% blended · Not guaranteed</span></article><article><small>Liquidity coverage</small><b>1.67×</b><span>$200k cash / $120k withdrawals</span></article>{% endif %}
+      {% if allocation_data %}
+        <article><small>Cash available</small><b>${{ allocation_data.available_cash_usd|floatformat:2 }}</b><span class="green">Used for this allocation</span></article>
+        <article><small>Total allocated</small><b>${{ allocation_data.available_cash_usd|floatformat:2 }}</b><span>Across four reserve tiers</span></article>
+        <article><small>Predicted withdrawals</small><b>${{ allocation_data.forecast.withdrawals_usd|floatformat:2 }}</b><span class="blue">Next forecast hour</span></article>
+        <article><small>Market risk points</small><b>{{ allocation_data.market_points.risk_points }}</b><span>From current Marketaux sentiment</span></article>
+      {% else %}
+        <div class="dashboard-empty"><b>No CSV data yet</b><span>Upload a CSV and run the dashboard to see your allocation.</span></div>
+      {% endif %}
     </section>
     <section id="tiers"><div class="section-head"><div><h2>Your reserve tiers</h2><p>Portfolio allocation across liquid cash and yield-bearing assets.</p></div><small>4 tiers · USD</small></div>
-      <div class="tiers">
-        <article class="tier cash"><small>TIER 0</small><h3>Cash buffer</h3><p>Operational checking reserves</p><b>{% if allocation_data %}${{ allocation_data.suggested_allocation.reserve|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.reserve|floatformat:1 }}%</em>{% else %}$200,000 <em>20%</em>{% endif %}</b><strong>0% <i>APY</i></strong><span>✓ Instantly available</span><p>No fee and minimal risk.</p><div class="bar"><i style="width:{% if allocation_data %}{{ allocation_data.allocation_percentages.reserve|floatformat:1 }}{% else %}20{% endif %}%"></i></div><a href="#risk">View details →</a></article>
-        <article class="tier repo"><small>TIER 1</small><h3>Overnight repo</h3><p>Central bank repurchase facility</p><b>{% if allocation_data %}${{ allocation_data.suggested_allocation.repo|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.repo|floatformat:1 }}%</em>{% else %}$300,000 <em>30%</em>{% endif %}</b><strong>≈ 4.3% <i>APY</i></strong><span>{% if allocation_data.repo_window_open %}◷ Execute now{% else %}◷ Queue for next repo sweep{% endif %}</span><p>Early break costs 0.5%.</p><div class="bar"><i style="width:{% if allocation_data %}{{ allocation_data.allocation_percentages.repo|floatformat:1 }}{% else %}30{% endif %}%"></i></div><a href="#risk">View details →</a></article>
-        <article class="tier bonds"><small>TIER 2</small><h3>2-year government bonds</h3><p>Government fixed income</p><b>{% if allocation_data %}${{ allocation_data.suggested_allocation.bonds|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.bonds|floatformat:1 }}%</em>{% else %}$300,000 <em>30%</em>{% endif %}</b><strong>≈ 4.8% <i>yield</i></strong><span>! Sale required</span><p>Prices move with yields. Sale incurs a 2% haircut.</p><div class="bar"><i style="width:{% if allocation_data %}{{ allocation_data.allocation_percentages.bonds|floatformat:1 }}{% else %}30{% endif %}%"></i></div><a href="#risk">View details →</a></article>
-        <article class="tier equity"><small>TIER 3</small><h3>Growth equities</h3><p>Equity market exposure</p><b>{% if allocation_data %}${{ allocation_data.suggested_allocation.equities|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.equities|floatformat:1 }}%</em>{% else %}$200,000 <em>20%</em>{% endif %}</b><strong>≈ 10% <i>expected APY</i></strong><span>! Sale required</span><p>≈18% annualized volatility. Emergency sale: 15% slippage.</p><div class="bar"><i style="width:{% if allocation_data %}{{ allocation_data.allocation_percentages.equities|floatformat:1 }}{% else %}20{% endif %}%"></i></div><a href="#risk">View details →</a></article>
+      {% if allocation_data %}
+        <div class="tiers">
+          <article class="tier cash"><small>TIER 0</small><h3>Cash buffer</h3><p>Operational checking reserves</p><b>${{ allocation_data.suggested_allocation.reserve|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.reserve|floatformat:1 }}%</em></b><strong>0% <i>APY</i></strong><span>✓ Instantly available</span><p>No fee and minimal risk.</p><div class="bar"><i style="width:{{ allocation_data.allocation_percentages.reserve|floatformat:1 }}%"></i></div><a href="#data">View history →</a></article>
+          <article class="tier repo"><small>TIER 1</small><h3>Overnight repo</h3><p>Central bank repurchase facility</p><b>${{ allocation_data.suggested_allocation.repo|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.repo|floatformat:1 }}%</em></b><strong>≈ 4.3% <i>APY</i></strong><span>{% if allocation_data.repo_window_open %}◷ Execute now{% else %}◷ Queue for next repo sweep{% endif %}</span><p>Early break costs 0.5%.</p><div class="bar"><i style="width:{{ allocation_data.allocation_percentages.repo|floatformat:1 }}%"></i></div><a href="#data">View history →</a></article>
+          <article class="tier bonds"><small>TIER 2</small><h3>2-year government bonds</h3><p>Government fixed income</p><b>${{ allocation_data.suggested_allocation.bonds|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.bonds|floatformat:1 }}%</em></b><strong>≈ 4.8% <i>yield</i></strong><span>! Sale required</span><p>Prices move with yields. Sale incurs a 2% haircut.</p><div class="bar"><i style="width:{{ allocation_data.allocation_percentages.bonds|floatformat:1 }}%"></i></div><a href="#data">View history →</a></article>
+          <article class="tier equity"><small>TIER 3</small><h3>Growth equities</h3><p>Equity market exposure</p><b>${{ allocation_data.suggested_allocation.equities|floatformat:2 }} <em>{{ allocation_data.allocation_percentages.equities|floatformat:1 }}%</em></b><strong>≈ 10% <i>expected APY</i></strong><span>! Sale required</span><p>≈18% annualized volatility. Emergency sale: 15% slippage.</p><div class="bar"><i style="width:{{ allocation_data.allocation_percentages.equities|floatformat:1 }}%"></i></div><a href="#data">View history →</a></article>
+        </div>
+      {% else %}
+        <div class="dashboard-empty"><b>No allocation to display</b><span>Your four tier allocations will appear here after you upload and run a CSV.</span></div>
+      {% endif %}
+    </section>    <section id="data" class="tier-history">
+      <div class="section-head"><div><h2>Allocation over time</h2><p>Each square tracks one tier across distinct CSV allocations.</p></div><small>{{ history_tier_charts.0.run_count }} DISTINCT SET{{ history_tier_charts.0.run_count|pluralize|upper }}</small></div>
+      <div class="tier-chart-grid">
+          {% for tier_chart in history_tier_charts %}
+            <article class="tier-chart-card {{ tier_chart.color }}">
+              <div class="tier-chart-heading"><div><small>ALLOCATION HISTORY</small><h3>{{ tier_chart.title }}</h3></div><span>{{ tier_chart.values|length }} data point{{ tier_chart.values|length|pluralize }}</span></div>
+              {% if tier_chart.values %}
+              <div class="tier-mini-chart" role="img" aria-label="{{ tier_chart.title }} allocation for each uploaded CSV">
+                {% for item in tier_chart.values %}
+                  <div class="tier-bar-column" title="{{ item.name }} · {{ item.uploaded_at|date:'M j, Y, P' }} · ${{ item.amount|floatformat:2 }}">
+                    <span>${{ item.amount|floatformat:0 }}</span>
+                    <div class="tier-bar-track"><i style="--bar-height:{{ item.width|floatformat:1 }}%"></i></div>
+                    <small>{{ item.name }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+              {% else %}<div class="tier-chart-empty">No data yet</div>{% endif %}
+            </article>
+          {% endfor %}
+      </div>
+      <div class="csv-history">
+        <div class="section-head"><div><h3>Your CSV uploads</h3><p>Delete an upload to remove its saved allocation from history.</p></div>
+          {% if csv_uploads %}<form method="post" action="{% url 'main:delete_all_csv_uploads' %}" onsubmit="return confirm('Delete all of your CSV uploads and saved allocation history? This cannot be undone.');">{% csrf_token %}<button class="delete-all-button" type="submit">Delete all</button></form>{% endif %}
+        </div>
+        {% for upload in csv_uploads %}
+          <div class="csv-history-row"><div><strong>{{ upload.original_filename }}</strong><small>{{ upload.uploaded_at|date:'M j, Y, P' }} · {{ upload.total_rows }} rows</small></div><form method="post" action="{% url 'main:delete_csv_upload' upload.id %}" onsubmit="return confirm('Delete {{ upload.original_filename|escapejs }} and its saved allocation history? This cannot be undone.');">{% csrf_token %}<button class="delete-upload-button" type="submit" aria-label="Delete {{ upload.original_filename }}">Delete</button></form></div>
+        {% empty %}<p class="csv-history-empty">No uploaded CSVs yet.</p>{% endfor %}
       </div>
     </section>
-    <section id="data" class="charts"><article class="panel"><div class="section-head"><div><h2>Allocation over time</h2><p>How the reserve mix is distributed.</p></div><small>{% if allocation_data %}UPLOADED CSV{% else %}SAMPLE DATA{% endif %}</small></div><div class="legend"><span>● Cash {% if allocation_data %}{{ allocation_data.allocation_percentages.reserve|floatformat:1 }}%{% else %}20%{% endif %}</span><span>● Repo {% if allocation_data %}{{ allocation_data.allocation_percentages.repo|floatformat:1 }}%{% else %}30%{% endif %}</span><span>● Bonds {% if allocation_data %}{{ allocation_data.allocation_percentages.bonds|floatformat:1 }}%{% else %}30%{% endif %}</span><span>● Equities {% if allocation_data %}{{ allocation_data.allocation_percentages.equities|floatformat:1 }}%{% else %}20%{% endif %}</span></div><div class="chart allocation-chart"><div class="bars"><i></i><i></i><i></i><i></i><i></i></div><div class="axis"><span>100%</span><span>50%</span><span>0%</span></div><footer>{% if allocation_data %}Allocation from {{ uploaded_csv_name }}{% else %}Oct 1　 Oct 4　 Oct 7　 Oct 10　 Oct 14{% endif %}</footer></div></article><article class="panel"><div class="section-head"><div><h2>Liquidity outlook</h2><p>Cash available against forecast withdrawals.</p></div><small>{% if allocation_data %}UPLOADED CSV{% else %}SAMPLE DATA{% endif %}</small></div><div class="legend"><span class="liquid">● Cash {% if allocation_data %}${{ allocation_data.suggested_allocation.reserve|floatformat:2 }}{% else %}$200k{% endif %}</span><span class="withdraw">● Forecast withdrawals {% if allocation_data %}${{ allocation_data.forecast.withdrawals_usd|floatformat:2 }}{% else %}$120k{% endif %}</span></div><div class="chart line-chart"><div class="line"></div><div class="line low"></div><div class="axis"><span>{% if allocation_data %}${{ allocation_data.suggested_allocation.reserve|floatformat:0 }}{% else %}$240k{% endif %}</span><span>{% if allocation_data %}${{ allocation_data.forecast.withdrawals_usd|floatformat:0 }}{% else %}$120k{% endif %}</span><span>$0k</span></div><footer>{% if allocation_data %}Next-hour forecast{% else %}Oct 1　　　　　　　　 Oct 7　　　　　　　　 Oct 14{% endif %}</footer></div></article></section>
     <div id="summarizer" aria-hidden="true"></div>
-    <section id="risk"><div class="section-head"><div><h2>Risk and liquidity</h2><p>{% if allocation_data %}Indicators calculated from your uploaded cash-flow history.{% else %}Key indicators for this illustrative cash forecast.{% endif %}</p></div></div><div class="risk"><article><b>✓</b><div><small>Withdrawal coverage</small><strong>{% if allocation_data %}{{ allocation_data.suggested_allocation.reserve_multiplier|floatformat:2 }}× reserve buffer{% else %}Covered in sample{% endif %}</strong><span>{% if allocation_data %}${{ allocation_data.forecast.withdrawals_usd|floatformat:2 }} predicted withdrawals{% else %}$120,000 forecast · $80,000 cash headroom{% endif %}</span></div></article><article><b>!</b><div><small>Market risk</small><strong>{% if allocation_data %}{{ allocation_data.market_points.risk_points }} risk points{% else %}Instrument-specific{% endif %}</strong><span>{% if allocation_data %}Equity {{ allocation_data.market_points.equity_points }} · Bonds {{ allocation_data.market_points.bond_points }} · Repo {{ allocation_data.market_points.repo_points }}{% else %}Repo 0.5% · Bonds 2% · Equities 15%{% endif %}</span></div></article><article><b>⌁</b><div><small>Repo sweep status</small><strong>{% if allocation_data.repo_window_open %}Repo window open{% else %}Repo window closed{% endif %}</strong><span>{% if allocation_data %}New repo allocation: ${{ allocation_data.suggested_allocation.repo|floatformat:2 }}{% else %}Based on this illustrative cash forecast{% endif %}</span></div></article></div></section>
+    <section id="portfolio-review" class="portfolio-review" aria-labelledby="portfolio-review-title">
+      <div class="section-head review-head">
+        <div><h2 id="portfolio-review-title">Portfolio strengths and risks</h2><p>Ask Gemini to explain the points behind this allocation and what they mean across the four tiers.</p></div>
+        <form method="post" action="{% url 'main:dashboard' %}#portfolio-review">
+          {% csrf_token %}
+          <button class="review-button" type="submit" name="action" value="review" {% if not allocation_data %}disabled{% endif %}>✦ Review with Gemini</button>
+        </form>
+      </div>
+      {% if review_error %}<p class="review-error" role="alert">{{ review_error }}</p>{% endif %}
+      {% if ai_review %}
+        <article class="review-summary"><div><small>GEMINI SUMMARY</small><p>{{ ai_review.summary }}</p></div><span class="risk-level risk-{{ ai_review.risk_breakdown.risk_level|lower }}">{{ ai_review.risk_breakdown.risk_level|title }} risk</span></article>
+        <div class="review-risk-grid">
+          <article class="review-card"><small>RESERVE EFFECT</small><p>{{ ai_review.risk_breakdown.reserve_effect }}</p></article>
+          <article class="review-card"><small>INVESTMENT EFFECT</small><p>{{ ai_review.risk_breakdown.investment_effect }}</p></article>
+        </div>
+        <div class="review-pros-cons">
+          <article class="review-card pros"><small>STRENGTHS</small><ul>{% for item in ai_review.strengths %}<li>{{ item }}</li>{% empty %}<li>No strengths were returned.</li>{% endfor %}</ul></article>
+          <article class="review-card cons"><small>RISKS TO WATCH</small><ul>{% for item in ai_review.weaknesses %}<li>{{ item }}</li>{% empty %}<li>No risks were returned.</li>{% endfor %}</ul></article>
+        </div>
+        <div class="review-tier-grid">
+          <article class="review-card"><small>TIER 0 · RESERVE</small><p>{{ ai_review.tier_analysis.tier_0_reserve }}</p></article>
+          <article class="review-card"><small>TIER 1 · REPO</small><p>{{ ai_review.tier_analysis.tier_1_repo }}</p></article>
+          <article class="review-card"><small>TIER 2 · BONDS</small><p>{{ ai_review.tier_analysis.tier_2_bonds }}</p></article>
+          <article class="review-card"><small>TIER 3 · EQUITIES</small><p>{{ ai_review.tier_analysis.tier_3_equities }}</p></article>
+        </div>
+        <div class="review-footnotes">
+          <article class="review-card"><small>SIGNALS USED</small><ul>{% for item in ai_review.signals_used %}<li>{{ item }}</li>{% empty %}<li>None returned.</li>{% endfor %}</ul></article>
+          <article class="review-card"><small>CHECK BEFORE ACTING</small><ul>{% for item in ai_review.recommended_checks %}<li>{{ item }}</li>{% empty %}<li>None returned.</li>{% endfor %}</ul></article>
+        </div>
+        <p class="review-disclaimer">AI-generated educational interpretation of the saved allocation and points. It is not financial advice.</p>
+      {% elif not review_error %}
+        <div class="review-empty"><b>See what is driving the mix.</b><span>Upload a CSV and run the dashboard to get an allocation, then ask Gemini for its strengths, trade-offs, and risk breakdown.</span></div>
+      {% endif %}
+    </section>
     <footer class="disclaimer">Educational sample only. Illustrative data, not financial advice. Yields and expected returns are not guaranteed; actual liquidity, fees and market outcomes may differ.</footer>
   </main>
 </div>

@@ -5,7 +5,7 @@
   const animatedGroups = ['.summary article', '.tier', '.panel', '.risk article', '.bar i'];
   const charts = [...document.querySelectorAll('.chart')];
 
-  const savedTheme = window.localStorage.getItem('reserve-juggler-theme');
+  const savedTheme = window.localStorage.getItem('money-maxxer-theme');
   if (savedTheme === 'light' || savedTheme === 'dark') root.dataset.theme = savedTheme;
 
   // Graphs animate only after they enter the user's viewport.
@@ -20,7 +20,7 @@
     button.classList.toggle('selected', button.dataset.theme === root.dataset.theme);
     button.addEventListener('click', () => {
       if (button.dataset.theme === root.dataset.theme) return;
-      window.localStorage.setItem('reserve-juggler-theme', button.dataset.theme);
+      window.localStorage.setItem('money-maxxer-theme', button.dataset.theme);
       window.location.reload();
     });
   });

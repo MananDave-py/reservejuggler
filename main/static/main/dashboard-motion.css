@@ -14,7 +14,7 @@ html[data-theme=light]{
 }
 html[data-theme=light] body{background:linear-gradient(135deg,#f5f7ff 0%,#eef8ff 55%,#f9f5ff 100%)}
 html[data-theme=light] .sidebar{background:rgba(255,255,255,.84);box-shadow:8px 0 30px rgba(78,84,150,.05)}
-html[data-theme=light] .brand b{background:linear-gradient(135deg,#635bff,#8b5cf6);box-shadow:0 6px 16px rgba(91,79,246,.25)}
+
 html[data-theme=light] .run{background:linear-gradient(135deg,#5b4ff6,#7c5cff);box-shadow:0 8px 18px rgba(91,79,246,.23)}
 html[data-theme=light] .sidebar nav a.active,html[data-theme=light] .sidebar nav a:hover{background:linear-gradient(90deg,#ecebff,#f2efff);color:#5146d9}
 html[data-theme=light] .summary article,html[data-theme=light] .tier,html[data-theme=light] .panel,html[data-theme=light] .risk article{box-shadow:0 10px 28px rgba(70,78,140,.06)}

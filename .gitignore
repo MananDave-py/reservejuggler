@@ -17,3 +17,9 @@ modules.xml
 
 # Local API keys
 .env
+
+# Build and collected assets
+/build/
+/dist/
+/staticfiles/
+*.spec

@@ -1,0 +1,20 @@
+services:
+  moneymaxxer:
+    build: .
+    image: moneymaxxer:local
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_DEBUG: "1"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      DJANGO_DB_PATH: /data/db.sqlite3
+      DJANGO_STATIC_ROOT: /data/staticfiles
+    volumes:
+      - moneymaxxer-data:/data
+    restart: unless-stopped
+
+volumes:
+  moneymaxxer-data:

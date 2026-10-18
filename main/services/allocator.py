@@ -2,7 +2,7 @@
 
 
 MINIMUM_CASH_BUFFER = 1_000_000.0
-CASH_SAFETY_MULTIPLIER = 1.25
+CASH_SAFETY_MULTIPLIER = 1.0
 
 
 def suggest_allocation(available_cash, predicted_withdrawals, repo_window_open):

@@ -105,7 +105,7 @@ When there is no error, use these values in `dashboard.html`:
 {% if error_message %}
   <p>{{ error_message }}</p>
 {% else %}
-  <h1>Reserve Juggler Dashboard</h1>
+  <h1>MoneyMaxxer Dashboard</h1>
 
   <p>Predicted withdrawals: ${{ allocation_data.forecast.withdrawals_usd|floatformat:2 }}</p>
   <p>Market risk points: {{ allocation_data.market_points.risk_points }}</p>

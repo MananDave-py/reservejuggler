@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Access your account · MoneyMaxxer</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f0f9ff; color: #172033; margin: 0; display: grid; min-height: 100vh; place-items: center; }
+    main { width: min(430px, calc(100% - 40px)); background: #fff; border: 1px solid #d8e5eb; border-radius: 14px; padding: 32px; box-sizing: border-box; box-shadow: 0 20px 50px #18415019; }
+    h1 { margin: 0 0 8px; } p { color: #5b667e; line-height: 1.5; } label { display: grid; gap: 6px; margin-top: 16px; font-size: 14px; font-weight: 600; } input { border: 1px solid #b9cad3; border-radius: 8px; padding: 10px; font: inherit; }
+    button { width: 100%; margin-top: 22px; border: 0; border-radius: 8px; background: #267d88; color: #fff; padding: 11px; font: inherit; font-weight: 700; cursor: pointer; }
+    .error { margin: 14px 0; padding: 10px; border-radius: 8px; color: #9b1c1c; background: #fff1f1; font-size: 14px; } .success { margin: 14px 0; padding: 10px; border-radius: 8px; color: #176b50; background: #e9f8f0; font-size: 14px; } .tabs { display: flex; gap: 8px; margin: 24px 0 12px; } .tabs a { flex: 1; padding: 10px; border: 1px solid #cddbe2; border-radius: 8px; color: #3c5361; text-align: center; text-decoration: none; font-weight: 700; } .tabs a.active { background: #267d88; border-color: #267d88; color: #fff; } .hidden { display: none; } .back { display: inline-block; margin-top: 22px; color: #267d88; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>MoneyMaxxer</h1>
+    <p>Sign in to view a saved allocation, or create an account to upload your first CSV.</p>
+    <nav class="tabs" aria-label="Account access">
+      <a href="#sign-in" class="{% if active_form != 'register' %}active{% endif %}" data-tab="login">Sign in</a>
+      <a href="#register" class="{% if active_form == 'register' %}active{% endif %}" data-tab="register">Create account</a>
+    </nav>
+    {% if success_message %}<p class="success">{{ success_message }}</p>{% endif %}
+    {% if error_message %}<p class="error">{{ error_message }}</p>{% endif %}
+    <form method="post" id="login-form" class="{% if active_form == 'register' %}hidden{% endif %}">
+      {% csrf_token %}<input type="hidden" name="action" value="login"><input type="hidden" name="next" value="{{ next_url }}">
+      <label>Username <input name="username" autocomplete="username" required></label>
+      <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Sign in</button>
+    </form>
+    <form method="post" id="register-form" class="{% if active_form != 'register' %}hidden{% endif %}">
+      {% csrf_token %}<input type="hidden" name="action" value="register"><input type="hidden" name="next" value="{{ next_url }}">
+      <label>Choose a username <input name="username" minlength="3" autocomplete="username" required></label>
+      <label>Choose a password <input name="password" type="password" minlength="6" autocomplete="new-password" required></label>
+      <button type="submit">Create account</button>
+    </form>
+    <a class="back" href="{% url 'main:intro' %}">← Back to home</a>
+  </main>
+  <script>
+    const tabs = document.querySelectorAll('[data-tab]');
+    const loginForm = document.querySelector('#login-form');
+    const registerForm = document.querySelector('#register-form');
+    tabs.forEach((tab) => tab.addEventListener('click', () => {
+      const registering = tab.dataset.tab === 'register';
+      tabs.forEach((item) => item.classList.toggle('active', item === tab));
+      loginForm.classList.toggle('hidden', registering);
+      registerForm.classList.toggle('hidden', !registering);
+    }));
+  </script>
+</body>
+</html>

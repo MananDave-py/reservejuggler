@@ -8,7 +8,35 @@ from urllib.request import Request, urlopen
 
 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models"
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+FALLBACK_GEMINI_MODEL = "gemini-3.6-flash"
+
+
+def check_gemini_api_key(api_key=None):
+    """Check that a Gemini key can reach the Generative Language API."""
+    api_key = api_key or os.environ.get("GEMINI_API_KEY") or _local_gemini_key()
+    if not api_key:
+        return {"ok": False, "message": "No Gemini API key is configured."}
+
+    request = Request(
+        GEMINI_API_URL,
+        headers={"User-Agent": "MoneyMaxxer/1.0", "x-goog-api-key": api_key},
+    )
+    try:
+        with urlopen(request, timeout=15) as response:
+            payload = json.load(response)
+        usable_models = [
+            item.get("name", "").removeprefix("models/")
+            for item in payload.get("models", [])
+            if "generateContent" in item.get("supportedGenerationMethods", [])
+        ]
+        if not usable_models:
+            return {"ok": False, "message": "Gemini key works, but no text-generation model is available."}
+        return {"ok": True, "message": "Gemini API key is working."}
+    except HTTPError as error:
+        return {"ok": False, "message": f"Gemini API rejected the key (HTTP {error.code})."}
+    except (URLError, TimeoutError, json.JSONDecodeError, OSError):
+        return {"ok": False, "message": "Could not reach the Gemini API to check this key."}
 
 
 def _local_gemini_key():
@@ -55,7 +83,6 @@ def _review_prompt(allocation_data):
         "weaknesses": ["..."],
         "risk_breakdown": {
             "risk_level": "low, medium, or high",
-            "risk_points_explained": "...",
             "reserve_effect": "...",
             "investment_effect": "...",
         },
@@ -103,7 +130,7 @@ def review_allocation(allocation_data, api_key=None, model=None):
         headers={
             "Content-Type": "application/json",
             "x-goog-api-key": api_key,
-            "User-Agent": "ReserveJuggler/1.0",
+            "User-Agent": "MoneyMaxxer/1.0",
         },
         method="POST",
     )
@@ -112,6 +139,12 @@ def review_allocation(allocation_data, api_key=None, model=None):
         with urlopen(request, timeout=30) as response:
             payload = json.load(response)
     except HTTPError as error:
+        if error.code == 503 and model == DEFAULT_GEMINI_MODEL:
+            return review_allocation(
+                allocation_data,
+                api_key=api_key,
+                model=FALLBACK_GEMINI_MODEL,
+            )
         try:
             error_payload = json.loads(error.read().decode("utf-8"))
             message = error_payload.get("error", {}).get("message", "Request failed.")

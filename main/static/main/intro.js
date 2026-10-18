@@ -1,12 +1,12 @@
 (() => {
   const root = document.documentElement;
-  const savedTheme = window.localStorage.getItem('reserve-juggler-theme');
+  const savedTheme = window.localStorage.getItem('money-maxxer-theme');
   if (savedTheme === 'light' || savedTheme === 'dark') root.dataset.theme = savedTheme;
   document.querySelectorAll('[data-theme]').forEach((button) => {
     button.classList.toggle('selected', button.dataset.theme === root.dataset.theme);
     button.addEventListener('click', () => {
       if (button.dataset.theme === root.dataset.theme) return;
-      window.localStorage.setItem('reserve-juggler-theme', button.dataset.theme);
+      window.localStorage.setItem('money-maxxer-theme', button.dataset.theme);
       window.location.reload();
     });
   });

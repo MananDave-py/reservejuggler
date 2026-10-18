@@ -2,7 +2,7 @@
 
 
 MINIMUM_RESERVE = 1_000_000.0
-BASE_RESERVE_MULTIPLIER = 1.25
+BASE_RESERVE_MULTIPLIER = 1.0
 MINIMUM_EQUITY_WEIGHT = 0.05
 
 
@@ -47,8 +47,8 @@ def suggest_points_allocation(
     bond_points = max(-50.0, min(50.0, float(points.get("bond_points", 0))))
     repo_points = max(-50.0, min(50.0, float(points.get("repo_points", 0))))
 
-    # Risk can raise the withdrawal safety buffer from 1.25x to 1.50x.
-    reserve_multiplier = BASE_RESERVE_MULTIPLIER + (risk_points / 400)
+    # Keep the reserve at the forecast amount; market risk changes investment weights.
+    reserve_multiplier = BASE_RESERVE_MULTIPLIER
     reserve = max(MINIMUM_RESERVE, predicted_withdrawals * reserve_multiplier)
     reserve = min(available_cash, reserve)
     surplus = available_cash - reserve

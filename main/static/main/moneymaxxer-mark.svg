@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">MoneyMaxxer mark</title>
+  <defs>
+    <linearGradient id="g" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#635bff"/><stop offset="1" stop-color="#18b89a"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#g)"/>
+  <path d="M11 33V15h4.1l8.9 10.2L32.9 15H37v18h-5V22.7l-8 9-8-9V33z" fill="#fff"/>
+  <circle cx="37" cy="11" r="3" fill="#ffd166"/>
+</svg>
