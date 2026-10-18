@@ -6,13 +6,20 @@ MoneyMaxxer is an educational treasury dashboard. It forecasts hourly withdrawal
 
 ## Try the demo
 
-The app starts with empty portfolios. To see a real calculation, sign in with a demo account and upload the included CSV yourself.
+The hosted demo has the 2027 sample loaded in Alex's account so judges can open the dashboard immediately. Local and Windows installs start with empty portfolios; upload the sample CSV below to calculate an allocation.
 
 - **Demo username:** `alex`
 - **Demo password:** `alex123`
 - **Sample CSV:** [`data/treasury_4tier_dataset_2027.csv`](data/treasury_4tier_dataset_2027.csv) — 8,760 unique hourly rows covering Jan 1–Dec 31, 2027.
 
-After opening the app, sign in, choose **Upload CSV**, select the sample file, and click **Run**. You can also create your own account; new accounts start with no uploads or sample portfolio data. Market news is optional: without a Marketaux key, the app continues with neutral news points. The Gemini portfolio explanation is optional and requires a Gemini API key.
+### Compare organizer data with a MoneyMaxxer dataset
+
+- **Organizer CSV:** [`data/treasury_4tier_dataset.csv`](data/treasury_4tier_dataset.csv) — the supplied 2026 hourly dataset.
+- **MoneyMaxxer comparison CSV:** [`data/treasury_4tier_dataset_2028.csv`](data/treasury_4tier_dataset_2028.csv) — synthetic data in the same 16-column format, with 8,784 unique hourly rows covering Jan 1–Dec 31, 2028. Its values and date range are different from the organizer file.
+
+To compare them, sign in, choose both CSVs together in the upload picker (Ctrl-click or Shift-click), and click **Run**. The dashboard shows each calculation side by side. Uploading only one CSV still works and prompts you to select another for comparison. The generated comparison file is illustrative and is not based on actual market data.
+
+On the hosted demo, sign in as `alex` to view the saved 2027 sample calculation. To compare datasets, choose both CSVs above together in **Upload CSVs** and click **Run**. In a local or Windows app, sign in, choose **Upload CSV**, select the 2027 sample, and click **Run**; upload both files together for a comparison. You can also create your own account; new accounts start with no uploads or sample portfolio data. Market news is optional: without a Marketaux key, the app continues with neutral news points. The Gemini portfolio explanation is optional and requires a Gemini API key.
 
 ## Fastest start: Windows portable app
 
